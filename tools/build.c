@@ -36,8 +36,8 @@
 
 #define SYS_SIZE 0x3000
 
-#define DEFAULT_MAJOR_ROOT 3
-#define DEFAULT_MINOR_ROOT 6
+#define DEFAULT_MAJOR_ROOT 0x03
+#define DEFAULT_MINOR_ROOT 0x01
 
 #define DEFAULT_MAJOR_SWAP 0
 #define DEFAULT_MINOR_SWAP 0
@@ -47,6 +47,9 @@
 #define SETUP_SECTS 4
 
 #define STRINGIFY(x) #x
+
+#define MAJOR(a) (((unsigned)(a))>>8)
+#define MINOR(a) ((a)&0xff)
 
 void die(char * str)
 {
@@ -183,10 +186,12 @@ int main(int argc, char ** argv)
 	
 	if ((id=open(argv[3],O_RDONLY,0))<0)
 		die("Unable to open 'system'");
+	/*
 	if (read(id,buf,GCC_HEADER) != GCC_HEADER)
 		die("Unable to read header of 'system'");
 	if (((long *) buf)[5] != 0)
 		die("Non-GCC header of 'system'");
+	*/
 	for (i=0 ; (c=read(id,buf,sizeof buf))>0 ; i+=c )
 		if (write(1,buf,c)!=c)
 			die("Write call failed");

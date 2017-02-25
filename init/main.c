@@ -20,10 +20,12 @@
  * won't be any messing with the stack from main(), but we define
  * some others too.
  */
-static inline _syscall0(int,fork)
-static inline _syscall0(int,pause)
-static inline _syscall1(int,setup,void *,BIOS)
-static inline _syscall0(int,sync)
+//inline int fork(void) __attribute__((always_inline));
+//inline int pause(void) __attribute__((always_inline));
+inline _syscall0(int,fork)
+inline _syscall0(int,pause)
+inline _syscall1(int,setup,void *,BIOS)
+inline _syscall0(int,sync)
 
 #include <linux/tty.h>
 #include <linux/sched.h>
@@ -173,10 +175,10 @@ void main(void)		/* This really IS void, no error here. */
  * task can run, and if not we return here.
  */
 	for(;;)
-		__asm__("int $0x80"::"a" (__NR_pause):"ax");
+		__asm__("int $0x80"::"a" (__NR_pause):);
 }
 
-static int printf(const char *fmt, ...)
+int printf(const char *fmt, ...)
 {
 	va_list args;
 	int i;
@@ -190,14 +192,13 @@ static int printf(const char *fmt, ...)
 void init(void)
 {
 	int pid,i;
-
 	setup((void *) &drive_info);
 	(void) open("/dev/tty1",O_RDWR,0);
 	(void) dup(0);
 	(void) dup(0);
 	printf("%d buffers = %d bytes buffer space\n\r",NR_BUFFERS,
 		NR_BUFFERS*BLOCK_SIZE);
-	printf("Free mem: %d bytes\n\r",memory_end-main_memory_start);
+	printf("Free mem: %d bytes\n\r",memory_end-main_memory_start);	
 	if (!(pid=fork())) {
 		close(0);
 		if (open("/etc/rc",O_RDONLY,0))
@@ -207,10 +208,10 @@ void init(void)
 	}
 	if (pid>0)
 		while (pid != wait(&i))
-			/* nothing */;
+			;
 	while (1) {
 		if ((pid=fork())<0) {
-			printf("Fork failed in init\r\n");
+			printf("Fork failed in init %c\r\n", ' ');
 			continue;
 		}
 		if (!pid) {

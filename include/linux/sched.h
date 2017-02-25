@@ -185,6 +185,7 @@ struct task_struct {
 extern struct task_struct *task[NR_TASKS];
 extern struct task_struct *last_task_used_math;
 extern struct task_struct *current;
+//extern struct task_struct *test_task;
 extern unsigned long volatile jiffies;
 extern unsigned long startup_time;
 extern int jiffies_offset;
@@ -221,12 +222,12 @@ __asm__("str %%ax\n\t" \
  */
 #define switch_to(n) {\
 struct {long a,b;} __tmp; \
-__asm__("cmpl %%ecx,_current\n\t" \
+__asm__("cmpl %%ecx,current\n\t" \
 	"je 1f\n\t" \
 	"movw %%dx,%1\n\t" \
-	"xchgl %%ecx,_current\n\t" \
+	"xchgl %%ecx,current\n\t" \
 	"ljmp %0\n\t" \
-	"cmpl %%ecx,_last_task_used_math\n\t" \
+	"cmpl %%ecx,last_task_used_math\n\t" \
 	"jne 1f\n\t" \
 	"clts\n" \
 	"1:" \
@@ -245,7 +246,21 @@ __asm__("movw %%dx,%0\n\t" \
 	  "m" (*((addr)+4)), \
 	  "m" (*((addr)+7)), \
 	  "d" (base) \
-	:"dx")
+	:)
+
+/*
+#define _set_base(addr,base) do { unsigned long __pr; \
+	__asm__ __volatile__ ("movw %%dx, %1\n\t" \
+			"rorl $16, %%edx\n\t" \
+			"movb %%dl,%2\n\t" \
+			"movb %%dh,%3\n\t" \
+			:"=&d"(__pr) \
+			:"m"(*((addr)+2)), \
+			"m"(*((addr)+4)), \
+			"m"(*((addr)+7)), \
+			"0"(base) \
+			); } while(0)
+*/
 
 #define _set_limit(addr,limit) \
 __asm__("movw %%dx,%0\n\t" \
@@ -257,7 +272,7 @@ __asm__("movw %%dx,%0\n\t" \
 	::"m" (*(addr)), \
 	  "m" (*((addr)+6)), \
 	  "d" (limit) \
-	:"dx")
+	:)
 
 #define set_base(ldt,base) _set_base( ((char *)&(ldt)) , base )
 #define set_limit(ldt,limit) _set_limit( ((char *)&(ldt)) , (limit-1)>>12 )
@@ -268,12 +283,26 @@ __asm__("movb %3,%%dh\n\t" \
 	"movb %2,%%dl\n\t" \
 	"shll $16,%%edx\n\t" \
 	"movw %1,%%dx" \
-	:"=d" (__base) \
+	:"=&d" (__base) \
 	:"m" (*((addr)+2)), \
 	 "m" (*((addr)+4)), \
 	 "m" (*((addr)+7))); \
 __base;})
 
+/*
+static inline unsigned long _get_base(char * addr){
+	unsigned long __base;
+	__asm__("movb %3,%%dh\n\t" \
+			"movb %2,%%dl\n\t" \
+			"shll $16,%%edx\n\t" \
+			"movw %1,%%dx\n\t" \
+			:"=&d"(__base) \
+			:"m" (*((addr)+2)), \
+			 "m" (*((addr)+4)), \
+			 "m" (*((addr)+7)));
+	return __base;
+}
+*/
 #define get_base(ldt) _get_base( ((char *)&(ldt)) )
 
 #define get_limit(segment) ({ \

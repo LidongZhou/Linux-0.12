@@ -1,9 +1,8 @@
 CC	=gcc
-CFLAGS	=-O -Wall -fstrength-reduce -fcombine-regs -fomit-frame-pointer \
-	-finline-functions -nostdinc -I../include
-AS	=gas
-AR	=gar
-LD	=gld
+CFLAGS	=-O0 -Wall -g -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-stack-protector -fno-builtin -I../include
+AS	=as
+AR	=ar
+LD	=ld
 CPP	=gcc -E -nostdinc -I../include
 
 .c.o:

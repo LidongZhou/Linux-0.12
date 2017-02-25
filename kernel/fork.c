@@ -78,7 +78,8 @@ int copy_process(int nr,long ebp,long edi,long esi,long gs,long none,
 	if (!p)
 		return -EAGAIN;
 	task[nr] = p;
-	*p = *current;	/* NOTE! this doesn't copy the supervisor stack */
+	//*p = *current;	/* NOTE! this doesn't copy the supervisor stack */
+	memcpy(p, current, sizeof(struct task_struct));
 	p->state = TASK_UNINTERRUPTIBLE;
 	p->pid = last_pid;
 	p->counter = p->priority;
